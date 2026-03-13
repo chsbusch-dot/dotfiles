@@ -80,8 +80,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 #plugins=(git)
 plugins=(git zsh-ai zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-bat)
 
-export OPENAI_API_KEY=""
-export ZSH_AI_PROVIDER="openai"
+[[ -f ~/.zsh-ai.env ]] && source ~/.zsh-ai.env
 
 
 source $ZSH/oh-my-zsh.sh
