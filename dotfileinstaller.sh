@@ -12,6 +12,41 @@ REPO_URL="https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main"
 ZSHRC="$HOME/.zshrc"
 BASHRC="$HOME/.bashrc"
 AI_ENV_FILE="$HOME/.zsh-ai.env"
+TTY_DEVICE="/dev/tty"
+
+has_tty() {
+    [ -r "$TTY_DEVICE" ] && [ -w "$TTY_DEVICE" ]
+}
+
+prompt_input() {
+    local __var_name="$1"
+    local __prompt="$2"
+    local __default="${3-}"
+    local __value
+
+    if [ -n "$__default" ]; then
+        printf "%s" "$__prompt" > "$TTY_DEVICE"
+        IFS= read -r __value < "$TTY_DEVICE" || __value=""
+        __value=${__value:-$__default}
+    else
+        printf "%s" "$__prompt" > "$TTY_DEVICE"
+        IFS= read -r __value < "$TTY_DEVICE" || __value=""
+    fi
+
+    printf -v "$__var_name" '%s' "$__value"
+}
+
+prompt_secret() {
+    local __var_name="$1"
+    local __prompt="$2"
+    local __value
+
+    if ! IFS= read -r -s -p "$__prompt" __value < "$TTY_DEVICE"; then
+        __value=""
+    fi
+    printf "\n" > "$TTY_DEVICE"
+    printf -v "$__var_name" '%s' "$__value"
+}
 
 # ==========================================
 # 1. System Updates & Base Packages
@@ -103,26 +138,29 @@ if [ -f "$ZSHRC" ]; then
 fi
 curl -fsSL "$REPO_URL/.zshrc" -o "$ZSHRC"
 
+echo "Sourcing downloaded .zshrc..."
+if ! zsh -ic "source \"$ZSHRC\"" >/dev/null 2>&1; then
+    echo "Warning: Failed to source $ZSHRC in zsh during installation."
+fi
+
 # ==========================================
 # 6. Configure AI Provider
 # ==========================================
 configure_ai_provider() {
     local provider_choice api_key openai_url openai_model openai_api_key choice_prompt
 
-    echo ""
-    echo "Choose Your AI Provider"
-    echo "1. Anthropic Claude (Default)"
-    echo "2. OpenAI"
-    echo "3. Google Gemini"
-    echo "4. Ollama (Local & Free)"
-    echo "5. Mistral AI"
-    echo "6. Grok (X.AI)"
-    echo "7. OpenAI-Compatible Servers"
-    echo "8. Perplexity"
-    echo ""
+    printf "\n" > "$TTY_DEVICE"
+    printf "Choose Your AI Provider\n" > "$TTY_DEVICE"
+    printf "1. Anthropic Claude (Default)\n" > "$TTY_DEVICE"
+    printf "2. OpenAI\n" > "$TTY_DEVICE"
+    printf "3. Google Gemini\n" > "$TTY_DEVICE"
+    printf "4. Ollama (Local & Free)\n" > "$TTY_DEVICE"
+    printf "5. Mistral AI\n" > "$TTY_DEVICE"
+    printf "6. Grok (X.AI)\n" > "$TTY_DEVICE"
+    printf "7. OpenAI-Compatible Servers\n" > "$TTY_DEVICE"
+    printf "8. Perplexity\n\n" > "$TTY_DEVICE"
 
-    read -r -p "Select provider [1]: " provider_choice
-    provider_choice=${provider_choice:-1}
+    prompt_input provider_choice "Select provider [1]: " "1"
 
     umask 077
     : > "$AI_ENV_FILE"
@@ -133,24 +171,21 @@ configure_ai_provider() {
 
     case "$provider_choice" in
         1)
-            read -r -s -p "Paste your Anthropic API key: " api_key
-            echo ""
+            prompt_secret api_key "Paste your Anthropic API key: "
             {
                 echo "export ANTHROPIC_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"anthropic\""
             } >> "$AI_ENV_FILE"
             ;;
         2)
-            read -r -s -p "Paste your OpenAI API key: " api_key
-            echo ""
+            prompt_secret api_key "Paste your OpenAI API key: "
             {
                 echo "export OPENAI_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"openai\""
             } >> "$AI_ENV_FILE"
             ;;
         3)
-            read -r -s -p "Paste your Gemini API key: " api_key
-            echo ""
+            prompt_secret api_key "Paste your Gemini API key: "
             {
                 echo "export GEMINI_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"gemini\""
@@ -160,31 +195,26 @@ configure_ai_provider() {
             {
                 echo "export ZSH_AI_PROVIDER=\"ollama\""
             } >> "$AI_ENV_FILE"
-            echo "Ollama selected. Install Ollama separately and run: ollama pull llama3.2"
+            printf "Ollama selected. Install Ollama separately and run: ollama pull llama3.2\n" > "$TTY_DEVICE"
             ;;
         5)
-            read -r -s -p "Paste your Mistral API key: " api_key
-            echo ""
+            prompt_secret api_key "Paste your Mistral API key: "
             {
                 echo "export MISTRAL_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"mistral\""
             } >> "$AI_ENV_FILE"
             ;;
         6)
-            read -r -s -p "Paste your X.AI API key: " api_key
-            echo ""
+            prompt_secret api_key "Paste your X.AI API key: "
             {
                 echo "export XAI_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"grok\""
             } >> "$AI_ENV_FILE"
             ;;
         7)
-            read -r -p "OpenAI-compatible URL [http://localhost:8080/v1/chat/completions]: " openai_url
-            openai_url=${openai_url:-http://localhost:8080/v1/chat/completions}
-            read -r -p "Model name [your-model-name]: " openai_model
-            openai_model=${openai_model:-your-model-name}
-            read -r -s -p "Optional API key for proxy auth (press Enter to skip): " openai_api_key
-            echo ""
+            prompt_input openai_url "OpenAI-compatible URL [http://localhost:8080/v1/chat/completions]: " "http://localhost:8080/v1/chat/completions"
+            prompt_input openai_model "Model name [your-model-name]: " "your-model-name"
+            prompt_secret openai_api_key "Optional API key for proxy auth (press Enter to skip): "
             {
                 echo "export ZSH_AI_PROVIDER=\"openai\""
                 echo "export ZSH_AI_OPENAI_URL=\"$openai_url\""
@@ -195,10 +225,8 @@ configure_ai_provider() {
             } >> "$AI_ENV_FILE"
             ;;
         8)
-            read -r -s -p "Paste your Perplexity API key: " api_key
-            echo ""
-            read -r -p "Perplexity model [llama-3.1-sonar-small-128k-online]: " openai_model
-            openai_model=${openai_model:-llama-3.1-sonar-small-128k-online}
+            prompt_secret api_key "Paste your Perplexity API key: "
+            prompt_input openai_model "Perplexity model [llama-3.1-sonar-small-128k-online]: " "llama-3.1-sonar-small-128k-online"
             {
                 echo "export OPENAI_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"openai\""
@@ -207,9 +235,8 @@ configure_ai_provider() {
             } >> "$AI_ENV_FILE"
             ;;
         *)
-            echo "Invalid selection. Falling back to Anthropic Claude."
-            read -r -s -p "Paste your Anthropic API key: " api_key
-            echo ""
+            printf "Invalid selection. Falling back to Anthropic Claude.\n" > "$TTY_DEVICE"
+            prompt_secret api_key "Paste your Anthropic API key: "
             {
                 echo "export ANTHROPIC_API_KEY=\"$api_key\""
                 echo "export ZSH_AI_PROVIDER=\"anthropic\""
@@ -221,9 +248,9 @@ configure_ai_provider() {
     echo "Saved zsh-ai configuration to $AI_ENV_FILE"
 }
 
-if [ -t 0 ] && [ -t 1 ]; then
+if has_tty; then
     if [ -f "$AI_ENV_FILE" ]; then
-        read -r -p "Existing AI config found at $AI_ENV_FILE. Replace it? [y/N]: " choice_prompt
+        prompt_input choice_prompt "Existing AI config found at $AI_ENV_FILE. Replace it? [y/N]: " "N"
         case "$choice_prompt" in
             [Yy]|[Yy][Ee][Ss])
                 configure_ai_provider
@@ -240,13 +267,13 @@ else
         umask 077
         cat <<'EOF' > "$AI_ENV_FILE"
 # Generated by dotfileinstaller.sh
-# Non-interactive run detected. Configure one provider, then start a new zsh session.
+# No terminal was available for prompts. Configure one provider, then start a new zsh session.
 # export ANTHROPIC_API_KEY="your-api-key-here"
 # export ZSH_AI_PROVIDER="anthropic"
 EOF
         chmod 600 "$AI_ENV_FILE"
     fi
-    echo "Skipping interactive AI provider setup (non-interactive run detected)."
+    echo "Skipping interactive AI provider setup (no terminal available for prompts)."
     echo "Edit $AI_ENV_FILE after install to configure your provider."
 fi
 
