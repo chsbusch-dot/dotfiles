@@ -53,7 +53,7 @@ prompt_secret() {
 # ==========================================
 if [ "$OS" = "Linux" ]; then
     sudo apt-get update
-    sudo apt-get install -y curl wget git tmux zsh build-essential openssh-server open-vm-tools htop ntopng
+    sudo apt-get install -y curl wget git tmux zsh build-essential openssh-server open-vm-tools htop
 elif [ "$OS" = "Darwin" ]; then
     if ! xcode-select -p &> /dev/null; then
         xcode-select --install
@@ -80,7 +80,7 @@ if ! command -v brew &> /dev/null; then
 fi
 
 if [ "$OS" = "Darwin" ]; then
-    brew install wget curl tmux git htop ntopng
+    brew install wget curl tmux git htop 
 fi
 
 if [ "$OS" = "Linux" ]; then
