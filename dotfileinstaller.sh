@@ -140,9 +140,14 @@ fi
 # ==========================================
 # 7. Final Polish & Shell Swap
 # ==========================================
-if [ "$SHELL" != "$(which zsh)" ]; then
+if [ "$SHELL" != "$(command -v zsh)" ]; then
     echo "Changing default shell to Zsh..."
-    chsh -s $(which zsh)
+    if chsh -s "$(command -v zsh)" "$USER"; then
+        echo "Default shell changed to Zsh."
+    else
+        echo "Warning: Could not change shell automatically (authentication failed or policy blocked)."
+        echo "You can run this manually later: chsh -s $(command -v zsh) $USER"
+    fi
 fi
 
 echo "=========================================="
