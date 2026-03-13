@@ -9,8 +9,7 @@ echo "Starting dotfiles and environment installation for macOS / Ubuntu..."
 
 OS="$(uname -s)"
 ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}
-# UPDATE THIS REPO URL TO YOUR ACTUAL GITHUB REPO
-REPO_URL="https://raw.githubusercontent.com/your-username/dotfiles/main"
+REPO_URL="https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main"
 
 # ==========================================
 # 1. System Updates & Base Packages
@@ -77,7 +76,7 @@ brew install zsh-ai
 # 5. Fetch .p10k.zsh Configuration
 # ==========================================
 echo "Downloading .p10k.zsh configuration..."
-curl -fsSL "$REPO_URL/.p10k.zsh" -o ~/.p10k.zsh
+curl -fsSL "$REPO_URL/p10k.zsh" -o ~/.p10k.zsh
 
 # ==========================================
 # 6. Configure .zshrc
