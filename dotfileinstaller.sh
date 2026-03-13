@@ -1,7 +1,8 @@
-# curl -fsSL https://raw.githubusercontent.com/your-username/dotfiles/main/install.sh | bash
-
-
 #!/bin/bash
+
+# curl -fsSL https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main/install.sh | bash
+
+
 set -e 
 
 echo "Starting dotfiles and environment installation for macOS / Ubuntu..."
