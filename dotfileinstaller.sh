@@ -10,6 +10,8 @@ echo "Starting dotfiles and environment installation for macOS / Ubuntu..."
 OS="$(uname -s)"
 ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}
 REPO_URL="https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main"
+ZSHRC="$HOME/.zshrc"
+BASHRC="$HOME/.bashrc"
 
 # ==========================================
 # 1. System Updates & Base Packages
@@ -48,6 +50,22 @@ if [ "$OS" = "Darwin" ]; then
     brew install wget curl tmux git htop ntopng
 fi
 
+if [ "$OS" = "Linux" ]; then
+    # Persist Linuxbrew setup for future shells and apply it now.
+    touch "$BASHRC"
+    if ! grep -q 'brew shellenv bash' "$BASHRC"; then
+        echo >> "$BASHRC"
+        echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"' >> "$BASHRC"
+    fi
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
+
+    # Ensure Homebrew/Linux build prerequisites are present.
+    sudo apt-get install -y build-essential
+
+    # Recommended compiler toolchain for formula builds.
+    brew install gcc
+fi
+
 # ==========================================
 # 3. Install Oh My Zsh & Powerlevel10k
 # ==========================================
@@ -84,14 +102,13 @@ curl -fsSL "$REPO_URL/p10k.zsh" -o ~/.p10k.zsh
 echo "Configuring .zshrc..."
 
 # Some unattended setups do not create ~/.zshrc automatically.
-if [ ! -f ~/.zshrc ]; then
-    touch ~/.zshrc
-fi
+mkdir -p "$HOME"
+touch "$ZSHRC"
 
-cp ~/.zshrc ~/.zshrc.backup.$(date +%s) 2>/dev/null || true
+cp "$ZSHRC" "$ZSHRC".backup.$(date +%s) 2>/dev/null || true
 
 # Add p10k instant prompt to the very top of .zshrc
-if ! grep -q "p10k-instant-prompt" ~/.zshrc; then
+if ! grep -q "p10k-instant-prompt" "$ZSHRC"; then
     # Create a temporary file to prepend the instant prompt code
     cat << 'EOF' > ~/.zshrc.tmp
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -99,25 +116,25 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 EOF
-    cat ~/.zshrc >> ~/.zshrc.tmp
-    mv ~/.zshrc.tmp ~/.zshrc
+    cat "$ZSHRC" >> ~/.zshrc.tmp
+    mv ~/.zshrc.tmp "$ZSHRC"
 fi
 
 # Set Theme and Plugins
-sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
-sed -i.bak 's/^plugins=(.*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting zsh-you-should-use zsh-bat zsh-ai)/' ~/.zshrc
+sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$ZSHRC"
+sed -i.bak 's/^plugins=(.*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting zsh-you-should-use zsh-bat zsh-ai)/' "$ZSHRC"
 
 # Append zsh-ai and p10k sourcing to the bottom
-if ! grep -q "ZSH_AI_PROVIDER" ~/.zshrc; then
-    echo -e "\n# ZSH AI Configuration" >> ~/.zshrc
-    echo 'source $(brew --prefix)/share/zsh-ai/zsh-ai.plugin.zsh' >> ~/.zshrc
-    echo 'export OPENAI_API_KEY="your-key-here"' >> ~/.zshrc
-    echo 'export ZSH_AI_PROVIDER="openai"' >> ~/.zshrc
+if ! grep -q "ZSH_AI_PROVIDER" "$ZSHRC"; then
+    echo -e "\n# ZSH AI Configuration" >> "$ZSHRC"
+    echo 'source $(brew --prefix)/share/zsh-ai/zsh-ai.plugin.zsh' >> "$ZSHRC"
+    echo 'export OPENAI_API_KEY="your-key-here"' >> "$ZSHRC"
+    echo 'export ZSH_AI_PROVIDER="openai"' >> "$ZSHRC"
 fi
 
-if ! grep -q "source ~/.p10k.zsh" ~/.zshrc; then
-    echo -e "\n# To customize prompt, run \`p10k configure\` or edit ~/.p10k.zsh." >> ~/.zshrc
-    echo '[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh' >> ~/.zshrc
+if ! grep -q "source ~/.p10k.zsh" "$ZSHRC"; then
+    echo -e "\n# To customize prompt, run \`p10k configure\` or edit ~/.p10k.zsh." >> "$ZSHRC"
+    echo '[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh' >> "$ZSHRC"
 fi
 
 # ==========================================
