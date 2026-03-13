@@ -1,4 +1,8 @@
+# GitHub Actions / repo metadata (not part of dotfiles)
+.github/
+
 # Logs
+.gitignore
 logs
 *.log
 npm-debug.log*
