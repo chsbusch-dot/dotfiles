@@ -82,8 +82,11 @@ plugins=(git zsh-ai zsh-autosuggestions zsh-syntax-highlighting you-should-use z
 
 [[ -f ~/.zsh-ai.env ]] && source ~/.zsh-ai.env
 
-
-source $ZSH/oh-my-zsh.sh
+if [[ -f $ZSH/oh-my-zsh.sh ]]; then
+  source $ZSH/oh-my-zsh.sh
+else
+  echo "Warning: Oh My Zsh is not installed at $ZSH"
+fi
 
 
 # User configuration

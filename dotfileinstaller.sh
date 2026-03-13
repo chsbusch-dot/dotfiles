@@ -64,7 +64,12 @@ fi
 # 3. Install Oh My Zsh & Powerlevel10k
 # ==========================================
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended || true
+fi
+
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "Oh My Zsh installer did not create $HOME/.oh-my-zsh. Cloning fallback copy..."
+    git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "$HOME/.oh-my-zsh"
 fi
 
 if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
