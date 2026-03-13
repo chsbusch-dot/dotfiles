@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# curl -fsSL https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main/install.sh | bash
+# curl -fsSL https://raw.githubusercontent.com/chsbusch-dot/dotfiles/main/dotfileinstaller.sh | bash
 
 
 set -e 
@@ -82,6 +82,12 @@ curl -fsSL "$REPO_URL/p10k.zsh" -o ~/.p10k.zsh
 # 6. Configure .zshrc
 # ==========================================
 echo "Configuring .zshrc..."
+
+# Some unattended setups do not create ~/.zshrc automatically.
+if [ ! -f ~/.zshrc ]; then
+    touch ~/.zshrc
+fi
+
 cp ~/.zshrc ~/.zshrc.backup.$(date +%s) 2>/dev/null || true
 
 # Add p10k instant prompt to the very top of .zshrc
