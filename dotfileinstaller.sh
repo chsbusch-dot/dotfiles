@@ -73,7 +73,7 @@ if ! command -v brew &> /dev/null; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
     if [ "$OS" = "Linux" ]; then
-        eval "$([ -x /home/linuxbrew/.linuxbrew/bin/brew ] && /home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        eval "$([ -x /home/linuxbrew/.linuxbrew/bin/brew ] && /home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
     elif [ "$OS" = "Darwin" ]; then
         [ -x "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)" || eval "$(/usr/local/bin/brew shellenv)"
     fi
@@ -91,7 +91,6 @@ if [ "$OS" = "Linux" ]; then
     fi
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
 
-    sudo apt-get install -y build-essential
     brew install gcc
 fi
 
